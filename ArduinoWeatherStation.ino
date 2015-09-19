@@ -84,13 +84,13 @@ void loop() {
     dhtTemperature = dht.readTemperature();
 
     Serial.println("**************************************");
-    Serial.print ("Pressure = "); Serial.println(pressure);
-    Serial.print ("Humidity = "); Serial.println(humidity);
-    Serial.print ("Temperature = "); Serial.println(temperature);
-    Serial.print ("DHT Temperature = "); Serial.println(dhtTemperature);
+    Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
+    Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%"); 
+    Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
+    Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
     Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
     Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
-    Serial.print ("Wind Speed = "); Serial.println(windSpeed);
+    Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
     Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
     Serial.println();
     t = millis();
