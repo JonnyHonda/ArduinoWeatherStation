@@ -37,12 +37,19 @@ float humidity = 0;
 
 int interval = 2000;
 unsigned long int t = 0;
-const int solarCellPin = 1;
+const int solarCellPin = 1; // Analog pin A1
 int solarCellValue = 0;
 
 float windSpeed = 0;
 int anemometerInterval  = 1000;
 unsigned long ta = 0;
+
+// Some variables for the wind direction sensor
+const int windDirectionPin = 2; // Analog pin A2
+int windDirectionValue = 0;
+char* windDirectionText = "N";
+int windOrdinal = 0;
+
 
 void setup() {
   // initialize the rain tipper pin as a input:
@@ -50,6 +57,9 @@ void setup() {
 
   // initialize the anemometer pin as a input:
   pinMode(anemometerPin, INPUT);
+
+  // initialize the wind direction pin as a input:
+  pinMode(windDirectionPin, INPUT);
 
   // initialize the LED as an output:
   pinMode(ledPin, OUTPUT);
@@ -76,6 +86,62 @@ void loop() {
     ta = millis();
   }
 
+  // At this point I can't implement the wind direction sensor but it will go sonthing like this
+  // depending of what the values come out as based on the voltage used, the resistor values one 16(ish) values
+  // will be returned here.
+  // It would make more sense to just return an ordinal value, but then we have plenty of program space
+  windDirectionValue = analogRead(windDirectionPin);
+  if (windDirectionValue == 33000) {
+    strcpy(windDirectionText, "N");
+    windOrdinal = 0;
+  } else if (windDirectionValue == 6570) {
+    strcpy(windDirectionText, "NNE");
+    windOrdinal = 1;
+  } else if (windDirectionValue == 8200) {
+    strcpy(windDirectionText, "NE");
+    windOrdinal = 2;
+  } else if (windDirectionValue == 891) {
+    strcpy(windDirectionText, "ENE");
+    windOrdinal = 3;
+  } else if (windDirectionValue == 1000) {
+    strcpy(windDirectionText, "E");
+    windOrdinal = 4;
+  } else if (windDirectionValue == 678) {
+    strcpy(windDirectionText, "ESE");
+    windOrdinal = 5;
+  } else if (windDirectionValue == 2100) {
+    strcpy(windDirectionText, "SE");
+    windOrdinal = 6;
+  } else if (windDirectionValue == 1410) {
+    strcpy(windDirectionText, "SSE");
+    windOrdinal = 7;
+  } else if (windDirectionValue == 3900) {
+    strcpy(windDirectionText, "S");
+    windOrdinal = 8;
+  } else if (windDirectionValue == 3130) {
+    strcpy(windDirectionText, "SSW");
+    windOrdinal = 9;
+  } else if (windDirectionValue == 16000) {
+    strcpy(windDirectionText, "SW");
+    windOrdinal = 10;
+  } else if (windDirectionValue == 14120) {
+    strcpy(windDirectionText, "WSW");
+    windOrdinal = 11;
+  } else if (windDirectionValue == 120000) {
+    strcpy(windDirectionText, "W");
+    windOrdinal = 12;
+  } else if (windDirectionValue == 42120) {
+    strcpy(windDirectionText, "WNW");
+    windOrdinal = 13;
+  } else if (windDirectionValue == 64900) {
+    strcpy(windDirectionText, "NW");
+    windOrdinal = 14;
+  } else if (windDirectionValue == 21880) {
+    strcpy(windDirectionText, "NNW");
+    windOrdinal = 15;
+  }
+  // Mmmmm No default - now WHAT!!
+
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
   // so we'll use a millis interval
   if (millis() > (interval + t)) {
@@ -85,12 +151,15 @@ void loop() {
 
     Serial.println("**************************************");
     Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
-    Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%"); 
+    Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
     Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
     Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
     Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
     Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
     Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
+    Serial.print ("Wind Direction Value = "); Serial.println(windDirectionValue);
+    Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
+    Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
     Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
     Serial.println();
     t = millis();
