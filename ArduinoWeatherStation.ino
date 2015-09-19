@@ -86,57 +86,58 @@ void loop() {
     ta = millis();
   }
 
-  // At this point I can't implement the wind direction sensor but it will go sonthing like this
+  // At this point I can't implement the wind direction sensor but it will go something like this
   // depending of what the values come out as based on the voltage used, the resistor values one 16(ish) values
   // will be returned here.
-  // It would make more sense to just return an ordinal value, but then we have plenty of program space
+  // It would make more sense to just return an ordinal value, but then we have plenty of program space.
+  // NOTE: THESE VALUES ARE MOCK JUST TO PROVE A POINT
   windDirectionValue = analogRead(windDirectionPin);
-  if (windDirectionValue == 33000) {
+  if (windDirectionValue >= 0 && windDirectionValue < 128) {
     strcpy(windDirectionText, "N");
     windOrdinal = 0;
-  } else if (windDirectionValue == 6570) {
+  } else if (windDirectionValue >= 128 && windDirectionValue < 192) {
     strcpy(windDirectionText, "NNE");
     windOrdinal = 1;
-  } else if (windDirectionValue == 8200) {
+  } else if (windDirectionValue >= 192 && windDirectionValue < 256) {
     strcpy(windDirectionText, "NE");
     windOrdinal = 2;
-  } else if (windDirectionValue == 891) {
+  } else if (windDirectionValue >= 256 && windDirectionValue < 320) {
     strcpy(windDirectionText, "ENE");
     windOrdinal = 3;
-  } else if (windDirectionValue == 1000) {
+  } else if (windDirectionValue >= 320 && windDirectionValue < 384) {
     strcpy(windDirectionText, "E");
     windOrdinal = 4;
-  } else if (windDirectionValue == 678) {
+  } else if (windDirectionValue >= 384 && windDirectionValue < 448) {
     strcpy(windDirectionText, "ESE");
     windOrdinal = 5;
-  } else if (windDirectionValue == 2100) {
+  } else if (windDirectionValue >= 448 && windDirectionValue < 960) {
     strcpy(windDirectionText, "SE");
     windOrdinal = 6;
-  } else if (windDirectionValue == 1410) {
+  } else if (windDirectionValue >= 307 && windDirectionValue < 512) {
     strcpy(windDirectionText, "SSE");
     windOrdinal = 7;
-  } else if (windDirectionValue == 3900) {
+  } else if (windDirectionValue >= 512 && windDirectionValue < 576) {
     strcpy(windDirectionText, "S");
     windOrdinal = 8;
-  } else if (windDirectionValue == 3130) {
+  } else if (windDirectionValue >= 576 && windDirectionValue < 640) {
     strcpy(windDirectionText, "SSW");
     windOrdinal = 9;
-  } else if (windDirectionValue == 16000) {
+  } else if (windDirectionValue >= 640 && windDirectionValue < 704) {
     strcpy(windDirectionText, "SW");
     windOrdinal = 10;
-  } else if (windDirectionValue == 14120) {
+  } else if (windDirectionValue >= 704 && windDirectionValue < 768) {
     strcpy(windDirectionText, "WSW");
     windOrdinal = 11;
-  } else if (windDirectionValue == 120000) {
+  } else if (windDirectionValue >= 768 && windDirectionValue < 832) {
     strcpy(windDirectionText, "W");
     windOrdinal = 12;
-  } else if (windDirectionValue == 42120) {
+  } else if (windDirectionValue >= 832 && windDirectionValue < 896) {
     strcpy(windDirectionText, "WNW");
     windOrdinal = 13;
-  } else if (windDirectionValue == 64900) {
+  } else if (windDirectionValue >= 896 && windDirectionValue < 960) {
     strcpy(windDirectionText, "NW");
     windOrdinal = 14;
-  } else if (windDirectionValue == 21880) {
+  } else if (windDirectionValue >=960) {
     strcpy(windDirectionText, "NNW");
     windOrdinal = 15;
   }
