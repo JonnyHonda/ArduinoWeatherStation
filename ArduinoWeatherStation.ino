@@ -40,6 +40,10 @@ unsigned long int t = 0;
 const int solarCellPin = 1;
 int solarCellValue = 0;
 
+float windSpeed = 0;
+int anemometerInterval  = 1000;
+unsigned long ta = 0;
+
 void setup() {
   // initialize the rain tipper pin as a input:
   pinMode(rainTipperPin, INPUT);
@@ -62,6 +66,16 @@ void loop() {
   solarCellValue = analogRead(solarCellPin);
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
+
+  // Note: regarding the anemometer.
+  // according to documentation found here http://www.philpot.me/weatherinsider.html
+  // one reverlution per second is 2.4 kph
+  if (millis() > (anemometerInterval + ta)) {
+    windSpeed = (float)anemometerCounter / 2.4;
+    anemometerCounter = 0;
+    ta = millis();
+  }
+
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
   // so we'll use a millis interval
   if (millis() > (interval + t)) {
@@ -76,6 +90,7 @@ void loop() {
     Serial.print ("DHT Temperature = "); Serial.println(dhtTemperature);
     Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
     Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
+    Serial.print ("Wind Speed = "); Serial.println(windSpeed);
     Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
     Serial.println();
     t = millis();
