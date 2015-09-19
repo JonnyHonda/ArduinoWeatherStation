@@ -22,6 +22,13 @@ volatile unsigned long int  rainTipperCounter = 0;
 volatile int rainTipperState = 0;
 volatile int lastRainTipperState = 0;
 
+const int  anemometerPin = 3; // Pin the anemometer is connected to, this *must* be an interrupt enabled pin
+
+// Some vaiable declared as volatile for use in the anemometer interupt
+volatile unsigned long int  anemometerCounter = 0;
+volatile int anemometerState = 0;
+volatile int lastAnemometerState = 0;
+
 // Various variables for use with the non interrupt sensors
 float temperature = 0;
 float pressure = 0;
@@ -37,12 +44,18 @@ void setup() {
   // initialize the rain tipper pin as a input:
   pinMode(rainTipperPin, INPUT);
 
+  // initialize the anemometer pin as a input:
+  pinMode(anemometerPin, INPUT);
+
   // initialize the LED as an output:
   pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
   dht.begin();
   bmp.begin();
+
+  // Setup the interrupt callback functions
   attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(anemometerPin), anemometerFunction, CHANGE);
 }
 
 void loop() {
@@ -62,6 +75,7 @@ void loop() {
     Serial.print ("Temperature = "); Serial.println(temperature);
     Serial.print ("DHT Temperature = "); Serial.println(dhtTemperature);
     Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
+    Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
     Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
     Serial.println();
     t = millis();
@@ -70,6 +84,23 @@ void loop() {
 
 }
 
+void anemometerFunction() {
+  // read the anemometer input pin:
+  anemometerState = digitalRead(anemometerPin);
+
+  // compare the anemometerState to its previous state
+  if (anemometerState != lastAnemometerState) {
+    // if the state has changed, increment the counter
+    if (anemometerState == HIGH) {
+      anemometerCounter++;
+    }
+    // Delay a little bit to avoid bouncing
+    delay(50);
+  }
+  // save the current state as the last state,
+  //for next time through the loop
+  lastAnemometerState = anemometerState;
+}
 
 void incrementRainTippper() {
   // read the Tipper input pin:
