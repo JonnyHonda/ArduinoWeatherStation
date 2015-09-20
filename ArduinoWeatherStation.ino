@@ -1,3 +1,25 @@
+/**
+ * WH1080 inspired weather station for the Arduino. 
+ * 
+ * Author John Burrin
+ * 
+ * Date 20 Sept 2015
+ * 
+ * Requires:
+ *          BMP085 Library from  https://github.com/adafruit/Adafruit-BMP085-Library
+ *          DHT22 Library from https://github.com/adafruit/DHT-sensor-library
+ *          
+ * Hardware:
+ *          Arduino Uno
+ *          DHT22 humidity sensor
+ *          BMP085 pressure sensor
+ *          Rain Gauge - N77NF
+ *          Wind Direction - N81NF
+ *          Wind Speed - N09QR
+ *          A random solar cell, or with the correct pull up resistor a CDR
+*/
+
+
 // BMP085 include libs
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
@@ -95,14 +117,16 @@ void loop() {
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
   // so we'll use a millis interval
   if (millis() > (interval + t)) {
+    // Turn the led on
     digitalWrite(ledPin, HIGH);
     humidity = dht.readHumidity();
     dhtTemperature = dht.readTemperature();
 
     // Push all the data console
-    outputToConsole()
+    outputToConsole();
 
     t = millis();
+    // Turn the led off
     digitalWrite(ledPin, LOW);
   }
 }
