@@ -7,11 +7,11 @@ Adafruit_BMP085 bmp;
 
 // DHT libs
 #include "DHT.h"
-#define DHTPIN 5
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
+const int  dhtPin = 5;
+const int dhtType = DHT22;
 
 // Instansiate the DHT object
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(dhtPin, dhtType);
 
 const int ledPin = 13;       // the pin that the LED is attached to
 
