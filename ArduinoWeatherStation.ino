@@ -99,19 +99,9 @@ void loop() {
     humidity = dht.readHumidity();
     dhtTemperature = dht.readTemperature();
 
-    Serial.println("**************************************");
-    Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
-    Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
-    Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
-    Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
-    Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
-    Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
-    Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
-    Serial.print ("Wind Direction Value = "); Serial.println(windDirectionValue);
-    Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
-    Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
-    Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
-    Serial.println();
+    // Push all the data console
+    outputToConsole()
+
     t = millis();
     digitalWrite(ledPin, LOW);
   }
@@ -123,7 +113,7 @@ void loop() {
  * @return: void
  * @description: This function increments the anemometerCounter by one each time it is called.
  * this function is supposed to be called by interrupt and employs a simple form of switch debouncing in software
- * 
+ *
  */
 void incrementAnemometer() {
   // read the anemometer input pin:
@@ -149,7 +139,7 @@ void incrementAnemometer() {
  * @return: void
  * @description: This function increments the incrementRainTippper by one each time it is called.
  * this function is supposed to be called by interrupt and employs a simple form of switch debouncing in software
- * 
+ *
  */
 void incrementRainTippper() {
   // read the Tipper input pin:
@@ -175,7 +165,7 @@ void incrementRainTippper() {
  * @name: windDirection
  * @params: none
  * @return: void
- * @description: Takes a values from the windDirectionPin 
+ * @description: Takes a values from the windDirectionPin
  * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
  */
 void windDirection() {
@@ -237,3 +227,26 @@ void windDirection() {
   }
   // Mmmmm No default - now WHAT!!
 }
+
+/**
+ * @name: outputToConsole
+ * @params: none
+ * @return: void
+ * @description: Display all the stuff to serial console out
+ */
+void outputToConsole() {
+  Serial.println("**************************************");
+  Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
+  Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
+  Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
+  Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
+  Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
+  Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
+  Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
+  Serial.print ("Wind Direction Value = "); Serial.println(windDirectionValue);
+  Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
+  Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
+  Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
+  Serial.println();
+}
+
