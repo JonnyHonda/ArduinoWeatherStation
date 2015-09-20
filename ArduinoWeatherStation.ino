@@ -17,14 +17,14 @@ const int ledPin = 13;       // the pin that the LED is attached to
 
 const int  rainTipperPin = 2; // Pin the rain tipper is connected to, this *must* be an interrupt enabled pin
 
-// Some vaiable declared as volatile for use in the rain tipper interupt
+// Some variables declared as volatile for use in the rain tipper interupt
 volatile unsigned long int  rainTipperCounter = 0;
 volatile int rainTipperState = 0;
 volatile int lastRainTipperState = 0;
 
 const int  anemometerPin = 3; // Pin the anemometer is connected to, this *must* be an interrupt enabled pin
 
-// Some vaiable declared as volatile for use in the anemometer interupt
+// Some variables declared as volatile for use in the anemometer interupt
 volatile unsigned long int  anemometerCounter = 0;
 volatile int anemometerState = 0;
 volatile int lastAnemometerState = 0;
@@ -37,8 +37,11 @@ float humidity = 0;
 
 int interval = 2000;
 unsigned long int t = 0;
+
+// Solar cell variables
 const int solarCellPin = 1; // Analog pin A1
 int solarCellValue = 0;
+
 
 float windSpeed = 0;
 int anemometerInterval  = 1000;
@@ -69,7 +72,7 @@ void setup() {
 
   // Setup the interrupt callback functions
   attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(anemometerPin), anemometerFunction, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, CHANGE);
 }
 
 void loop() {
@@ -86,6 +89,74 @@ void loop() {
     ta = millis();
   }
 
+  //call the windDirection function
+  windDirection();
+
+  // The dht22 is slow but I want to avoid putting a delay in that freezes the code
+  // so we'll use a millis interval
+  if (millis() > (interval + t)) {
+    digitalWrite(ledPin, HIGH);
+    humidity = dht.readHumidity();
+    dhtTemperature = dht.readTemperature();
+
+    Serial.println("**************************************");
+    Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
+    Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
+    Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
+    Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
+    Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
+    Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
+    Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
+    Serial.print ("Wind Direction Value = "); Serial.println(windDirectionValue);
+    Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
+    Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
+    Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
+    Serial.println();
+    t = millis();
+    digitalWrite(ledPin, LOW);
+  }
+
+}
+
+void incrementAnemometer() {
+  // read the anemometer input pin:
+  anemometerState = digitalRead(anemometerPin);
+
+  // compare the anemometerState to its previous state
+  if (anemometerState != lastAnemometerState) {
+    // if the state has changed, increment the counter
+    if (anemometerState == HIGH) {
+      anemometerCounter++;
+    }
+    // Delay a little bit to avoid bouncing
+    delay(50);
+  }
+  // save the current state as the last state,
+  //for next time through the loop
+  lastAnemometerState = anemometerState;
+}
+
+void incrementRainTippper() {
+  // read the Tipper input pin:
+  rainTipperState = digitalRead(rainTipperPin);
+
+  // compare the rainTipperState to its previous state
+  if (rainTipperState != lastRainTipperState) {
+    // if the state has changed, increment the counter
+    if (rainTipperState == HIGH) {
+      // if the current state is HIGH then increment the counter
+      rainTipperCounter++;
+    }
+    // Delay a little bit to avoid bouncing
+    delay(50);
+  }
+  // save the current state as the last state,
+  //for next time through the loop
+  lastRainTipperState = rainTipperState;
+}
+
+
+void windDirection() {
   // At this point I can't implement the wind direction sensor but it will go something like this
   // depending of what the values come out as based on the voltage used, the resistor values one 16(ish) values
   // will be returned here.
@@ -137,72 +208,9 @@ void loop() {
   } else if (windDirectionValue >= 896 && windDirectionValue < 960) {
     strcpy(windDirectionText, "NW");
     windOrdinal = 14;
-  } else if (windDirectionValue >=960) {
+  } else if (windDirectionValue >= 960) {
     strcpy(windDirectionText, "NNW");
     windOrdinal = 15;
   }
   // Mmmmm No default - now WHAT!!
-
-  // The dht22 is slow but I want to avoid putting a delay in that freezes the code
-  // so we'll use a millis interval
-  if (millis() > (interval + t)) {
-    digitalWrite(ledPin, HIGH);
-    humidity = dht.readHumidity();
-    dhtTemperature = dht.readTemperature();
-
-    Serial.println("**************************************");
-    Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
-    Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
-    Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
-    Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
-    Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
-    Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
-    Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
-    Serial.print ("Wind Direction Value = "); Serial.println(windDirectionValue);
-    Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
-    Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
-    Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
-    Serial.println();
-    t = millis();
-    digitalWrite(ledPin, LOW);
-  }
-
 }
-
-void anemometerFunction() {
-  // read the anemometer input pin:
-  anemometerState = digitalRead(anemometerPin);
-
-  // compare the anemometerState to its previous state
-  if (anemometerState != lastAnemometerState) {
-    // if the state has changed, increment the counter
-    if (anemometerState == HIGH) {
-      anemometerCounter++;
-    }
-    // Delay a little bit to avoid bouncing
-    delay(50);
-  }
-  // save the current state as the last state,
-  //for next time through the loop
-  lastAnemometerState = anemometerState;
-}
-
-void incrementRainTippper() {
-  // read the Tipper input pin:
-  rainTipperState = digitalRead(rainTipperPin);
-
-  // compare the rainTipperState to its previous state
-  if (rainTipperState != lastRainTipperState) {
-    // if the state has changed, increment the counter
-    if (rainTipperState == HIGH) {
-      // if the current state is HIGH then increment the counter
-      rainTipperCounter++;
-    }
-    // Delay a little bit to avoid bouncing
-    delay(50);
-  }
-  // save the current state as the last state,
-  //for next time through the loop
-  lastRainTipperState = rainTipperState;
-}
-
