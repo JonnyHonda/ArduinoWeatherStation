@@ -82,7 +82,7 @@ void loop() {
 
   // Note: regarding the anemometer.
   // according to documentation found here http://www.philpot.me/weatherinsider.html
-  // one reverlution per second is 2.4 kph
+  // one revolution per second is 2.4 kph
   if (millis() > (anemometerInterval + ta)) {
     windSpeed = (float)anemometerCounter / 2.4;
     anemometerCounter = 0;
@@ -115,9 +115,16 @@ void loop() {
     t = millis();
     digitalWrite(ledPin, LOW);
   }
-
 }
 
+/**
+ * @name: incrementAnemometer
+ * @params: none
+ * @return: void
+ * @description: This function increments the anemometerCounter by one each time it is called.
+ * this function is supposed to be called by interrupt and employs a simple form of switch debouncing in software
+ * 
+ */
 void incrementAnemometer() {
   // read the anemometer input pin:
   anemometerState = digitalRead(anemometerPin);
@@ -132,10 +139,18 @@ void incrementAnemometer() {
     delay(50);
   }
   // save the current state as the last state,
-  //for next time through the loop
+  // for comparison next time
   lastAnemometerState = anemometerState;
 }
 
+/**
+ * @name: incrementRainTippper
+ * @params: none
+ * @return: void
+ * @description: This function increments the incrementRainTippper by one each time it is called.
+ * this function is supposed to be called by interrupt and employs a simple form of switch debouncing in software
+ * 
+ */
 void incrementRainTippper() {
   // read the Tipper input pin:
   rainTipperState = digitalRead(rainTipperPin);
@@ -151,7 +166,7 @@ void incrementRainTippper() {
     delay(50);
   }
   // save the current state as the last state,
-  //for next time through the loop
+  // for comparison next time
   lastRainTipperState = rainTipperState;
 }
 
