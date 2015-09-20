@@ -171,12 +171,20 @@ void incrementRainTippper() {
 }
 
 
+/**
+ * @name: windDirection
+ * @params: none
+ * @return: void
+ * @description: Takes a values from the windDirectionPin 
+ * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
+ */
 void windDirection() {
   // At this point I can't implement the wind direction sensor but it will go something like this
   // depending of what the values come out as based on the voltage used, the resistor values one 16(ish) values
   // will be returned here.
   // It would make more sense to just return an ordinal value, but then we have plenty of program space.
   // NOTE: THESE VALUES ARE MOCK JUST TO PROVE A POINT
+  // BY LEAVING A WIRE IN A2 THE PIN WILL FLOAT ALL OVER THE PLACE GIVING A GOOD SIMULATION.
   windDirectionValue = analogRead(windDirectionPin);
   if (windDirectionValue >= 0 && windDirectionValue < 128) {
     strcpy(windDirectionText, "N");
