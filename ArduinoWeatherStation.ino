@@ -196,8 +196,11 @@ void incrementRainTippper() {
  * @name: windDirection
  * @params: none
  * @return: void
- * @description: Takes a value from the windDirectionPin
+ * @description: Takes a value from the windDirectionPin and set the winDirectionText and windOrdinal
+ * the text is simple the N,E,S,W ,.... etc and the ordinal value is the segment the sensor is pointing in
+ * 0 for North, 4 for East ... etc.
  * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
+ * 
  */
 void windDirection() {
   // At this point I can't implement the wind direction sensor but it will go something like this
@@ -264,6 +267,7 @@ void windDirection() {
  * @params: none
  * @return: void
  * @description: Display all the stuff to serial console out
+ * 
  */
 void outputToConsole() {
   Serial.println("**************************************");
