@@ -207,28 +207,28 @@ void windDirection() {
   // NOTE: THESE VALUES ARE MOCK JUST TO PROVE A POINT
   // BY LEAVING A WIRE IN A2 THE PIN WILL FLOAT ALL OVER THE PLACE GIVING A GOOD SIMULATION.
   windDirectionValue = analogRead(windDirectionPin);
-  if (windDirectionValue >= 0 && windDirectionValue < 128) {
+  if (windDirectionValue >= 0 && windDirectionValue < 64) {
     strcpy(windDirectionText, "N");
     windOrdinal = 0;
-  } else if (windDirectionValue >= 128 && windDirectionValue < 192) {
+  } else if (windDirectionValue >= 64 && windDirectionValue < 128) {
     strcpy(windDirectionText, "NNE");
     windOrdinal = 1;
-  } else if (windDirectionValue >= 192 && windDirectionValue < 256) {
+  } else if (windDirectionValue >= 128 && windDirectionValue < 192) {
     strcpy(windDirectionText, "NE");
     windOrdinal = 2;
-  } else if (windDirectionValue >= 256 && windDirectionValue < 320) {
+  } else if (windDirectionValue >= 192 && windDirectionValue < 256) {
     strcpy(windDirectionText, "ENE");
     windOrdinal = 3;
-  } else if (windDirectionValue >= 320 && windDirectionValue < 384) {
+  } else if (windDirectionValue >= 256 && windDirectionValue < 320) {
     strcpy(windDirectionText, "E");
     windOrdinal = 4;
-  } else if (windDirectionValue >= 384 && windDirectionValue < 448) {
+  } else if (windDirectionValue >= 320 && windDirectionValue < 384) {
     strcpy(windDirectionText, "ESE");
     windOrdinal = 5;
-  } else if (windDirectionValue >= 448 && windDirectionValue < 960) {
+  } else if (windDirectionValue >= 384 && windDirectionValue < 448) {
     strcpy(windDirectionText, "SE");
     windOrdinal = 6;
-  } else if (windDirectionValue >= 307 && windDirectionValue < 512) {
+  } else if (windDirectionValue >= 448 && windDirectionValue < 512) {
     strcpy(windDirectionText, "SSE");
     windOrdinal = 7;
   } else if (windDirectionValue >= 512 && windDirectionValue < 576) {
