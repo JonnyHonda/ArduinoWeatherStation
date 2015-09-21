@@ -13,11 +13,11 @@
  *          Arduino Uno
  *          DHT22 humidity sensor
  *          BMP085 pressure sensor
- *          Rain Gauge - N77NF
- *          Wind Direction - N81NF
- *          Wind Speed - N09QR
+ *          N77NF Maplin Rain Gauge
+ *          N81NF Maplin Wind Direction
+ *          N09QR Maplin Wind Speed
  *          A random solar cell, or with the correct pull up resistor a CDR
-*/
+**/
 
 
 // BMP085 include libs
@@ -161,7 +161,7 @@ void incrementAnemometer() {
  * @name: incrementRainTippper
  * @params: none
  * @return: void
- * @description: This function increments the incrementRainTippper by one each time it is called.
+ * @description: This function increments the rainTipperCounter by one each time it is called.
  * this function is supposed to be called by interrupt and employs a simple form of switch debouncing in software
  *
  */
@@ -189,12 +189,12 @@ void incrementRainTippper() {
  * @name: windDirection
  * @params: none
  * @return: void
- * @description: Takes a values from the windDirectionPin
+ * @description: Takes a value from the windDirectionPin
  * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
  */
 void windDirection() {
   // At this point I can't implement the wind direction sensor but it will go something like this
-  // depending of what the values come out as based on the voltage used, the resistor values one 16(ish) values
+  // depending of what the values come out based on the voltage used, the resistor values one 16(ish) values
   // will be returned here.
   // It would make more sense to just return an ordinal value, but then we have plenty of program space.
   // NOTE: THESE VALUES ARE MOCK JUST TO PROVE A POINT
