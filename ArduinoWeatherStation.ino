@@ -101,7 +101,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, CHANGE);
 }
 
-void loop() {
+void loop() { 
   solarCellValue = analogRead(solarCellPin);
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
@@ -197,7 +197,7 @@ void incrementRainTippper() {
  * @params: none
  * @return: void
  * @description: Takes a value from the windDirectionPin and set the winDirectionText and windOrdinal
- * the text is simple the N,E,S,W ,.... etc and the ordinal value is the segment the sensor is pointing in
+ * the text is simply N,E,S,W ,.... etc and the ordinal value is the segment the sensor is pointing in
  * 0 for North, 4 for East ... etc.
  * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
  * 
