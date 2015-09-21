@@ -75,6 +75,10 @@ int windDirectionValue = 0;
 char* windDirectionText = "N";
 int windOrdinal = 0;
 
+// Variables used in controling when console display messages are outputted
+int displayInterval = 2000;
+unsigned long int di = 0;
+
 
 void setup() {
   // initialize the rain tipper pin as a input:
@@ -115,19 +119,22 @@ void loop() {
   windDirection();
 
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
-  // so we'll use a millis interval
+  // so we'll use a millis interval check
   if (millis() > (interval + t)) {
     // Turn the led on
     digitalWrite(ledPin, HIGH);
     humidity = dht.readHumidity();
     dhtTemperature = dht.readTemperature();
 
-    // Push all the data console
-    outputToConsole();
-
     t = millis();
     // Turn the led off
     digitalWrite(ledPin, LOW);
+  }
+
+  // Push all the data console 
+  if (millis() >(displayInterval + di)){   
+    outputToConsole();
+    di = millis();    
   }
 }
 
