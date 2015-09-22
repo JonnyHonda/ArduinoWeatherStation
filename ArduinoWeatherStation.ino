@@ -1,14 +1,14 @@
 /**
- * WH1080 inspired weather station for the Arduino. 
- * 
+ * WH1080 inspired weather station for the Arduino.
+ *
  * Author John Burrin
- * 
+ *
  * Date 20 Sept 2015
- * 
+ *
  * Requires:
  *          BMP085 Library from  https://github.com/adafruit/Adafruit-BMP085-Library
  *          DHT22 Library from https://github.com/adafruit/DHT-sensor-library
- *          
+ *
  * Hardware:
  *          Arduino Uno
  *          DHT22 humidity sensor
@@ -19,7 +19,7 @@
  *          A random solar cell, or with the correct pull up resistor a CDR
 **/
 
-
+#define DEBUG true
 // BMP085 include libs
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
@@ -57,7 +57,7 @@ float pressure = 0;
 float dhtTemperature = 0;
 float humidity = 0;
 
-int interval = 2000;
+const int interval = 2000;
 unsigned long int t = 0;
 
 // Solar cell variables
@@ -66,17 +66,18 @@ int solarCellValue = 0;
 
 
 float windSpeed = 0;
-int anemometerInterval  = 1000;
+const int anemometerInterval  = 1000;
 unsigned long ta = 0;
 
 // Some variables for the wind direction sensor
 const int windDirectionPin = 2; // Analog pin A2
 int windDirectionValue = 0;
-char* windDirectionText = "N";
+char* windDirectionText;
+
 int windOrdinal = 0;
 
 // Variables used in controling when console display messages are outputted
-int displayInterval = 2000;
+const int displayInterval = 2000;
 unsigned long int di = 0;
 
 
@@ -96,12 +97,20 @@ void setup() {
   dht.begin();
   bmp.begin();
 
+  // Default windDirectionText to some value, I chose North as windDirectionValue will be 0 (zero)
+  strcpy(windDirectionText, "N");
+
   // Setup the interrupt callback functions
   attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
   attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, CHANGE);
 }
 
-void loop() { 
+void loop() {
+  #if defined(DEBUG)
+  int initial = 0;
+  int final = 0;
+  initial = micros();
+  #endif
   solarCellValue = analogRead(solarCellPin);
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
@@ -131,11 +140,16 @@ void loop() {
     digitalWrite(ledPin, LOW);
   }
 
-  // Push all the data console 
-  if (millis() >(displayInterval + di)){   
+  // Push all the data console
+  if (millis() > (displayInterval + di)) {
     outputToConsole();
-    di = millis();    
+    di = millis();
   }
+  
+  #if defined(DEBUG)
+  final = micros();
+  Serial.print("Loop execution time: ");Serial.print(final - initial);Serial.println(" micro seconds");
+  #endif
 }
 
 /**
@@ -200,7 +214,7 @@ void incrementRainTippper() {
  * the text is simply N,E,S,W ,.... etc and the ordinal value is the segment the sensor is pointing in
  * 0 for North, 4 for East ... etc.
  * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
- * 
+ *
  */
 void windDirection() {
   // At this point I can't implement the wind direction sensor but it will go something like this
@@ -267,7 +281,7 @@ void windDirection() {
  * @params: none
  * @return: void
  * @description: Display all the stuff to serial console out
- * 
+ *
  */
 void outputToConsole() {
   Serial.println("**************************************");
