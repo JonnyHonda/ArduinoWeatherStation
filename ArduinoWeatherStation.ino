@@ -57,7 +57,7 @@ float pressure = 0;
 float dhtTemperature = 0;
 float humidity = 0;
 
-const int interval = 2000;
+const int dhtReadInterval = 2000;
 unsigned long int t = 0;
 
 // Solar cell variables
@@ -66,7 +66,7 @@ int solarCellValue = 0;
 
 
 float windSpeed = 0;
-const int anemometerInterval  = 1000;
+const int anemometerSampleInterval  = 1000;
 unsigned long ta = 0;
 
 // Some variables for the wind direction sensor
@@ -118,7 +118,7 @@ void loop() {
   // Note: regarding the anemometer.
   // according to documentation found here http://www.philpot.me/weatherinsider.html
   // one revolution per second is 2.4 kph
-  if (millis() > (anemometerInterval + ta)) {
+  if (millis() > (anemometerSampleInterval + ta)) {
     windSpeed = (float)anemometerCounter / 2.4;
     anemometerCounter = 0;
     ta = millis();
@@ -129,7 +129,7 @@ void loop() {
 
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
   // so we'll use a millis interval check
-  if (millis() > (interval + t)) {
+  if (millis() > (dhtReadInterval + t)) {
     // Turn the led on
     digitalWrite(ledPin, HIGH);
     humidity = dht.readHumidity();
