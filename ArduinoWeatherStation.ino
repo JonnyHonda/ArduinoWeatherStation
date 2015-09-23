@@ -106,11 +106,12 @@ void setup() {
 }
 
 void loop() {
-  #if defined(DEBUG)
+#if defined(DEBUG)
   int initial = 0;
   int final = 0;
   initial = micros();
-  #endif
+#endif
+
   solarCellValue = analogRead(solarCellPin);
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
@@ -145,11 +146,11 @@ void loop() {
     outputToConsole();
     di = millis();
   }
-  
-  #if defined(DEBUG)
+
+#if defined(DEBUG)
   final = micros();
-  Serial.print("Loop execution time: ");Serial.print(final - initial);Serial.println(" micro seconds");
-  #endif
+  Serial.print("Loop execution time: "); Serial.print(final - initial); Serial.println(" micro seconds");
+#endif
 }
 
 /**
