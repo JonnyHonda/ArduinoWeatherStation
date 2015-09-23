@@ -17,6 +17,9 @@
  *          N81NF Maplin Wind Direction
  *          N09QR Maplin Wind Speed
  *          A random solar cell, or with the correct pull up resistor a CDR
+ *
+ * Version v0.01
+ *
 **/
 
 #define DEBUG true
@@ -67,7 +70,7 @@ int solarCellValue = 0;
 
 float windSpeed = 0;
 const int anemometerSampleInterval  = 1000;
-unsigned long ta = 0;
+unsigned long anemometerTimer = 0;
 
 // Some variables for the wind direction sensor
 const int windDirectionPin = 2; // Analog pin A2
@@ -80,6 +83,13 @@ int windOrdinal = 0;
 const int displayInterval = 2000;
 unsigned long int di = 0;
 
+float peakWindSpeed = 0;
+float averageWindSpeed = 0;
+float accumulatedWindSpeed = 0;
+int sampleCounter = 0;
+
+const int samplePeriod = 60000;
+unsigned long int samplePeriodTimer = 0;
 
 void setup() {
   // initialize the rain tipper pin as a input:
@@ -119,10 +129,27 @@ void loop() {
   // Note: regarding the anemometer.
   // according to documentation found here http://www.philpot.me/weatherinsider.html
   // one revolution per second is 2.4 kph
-  if (millis() > (anemometerSampleInterval + ta)) {
-    windSpeed = (float)anemometerCounter / 2.4;
+  if (millis() > (anemometerSampleInterval + anemometerTimer)) {
+    windSpeed = (float)anemometerCounter / 2.4; // Calculate the Wind speed
+    sampleCounter++;                            // Increment the count of samples taken
+    accumulatedWindSpeed += windSpeed;          // Sum the wind speeds recorded so far.
+
+    if (windSpeed > peakWindSpeed) {
+      peakWindSpeed = windSpeed;                // Record the peak wind speed so far in this period
+    }
+
+    if (millis() > (samplePeriod + samplePeriodTimer)) {
+      // Calculate the avarage for this period and then zero accumulated value and counter
+      averageWindSpeed = accumulatedWindSpeed / sampleCounter;
+
+      // Reset variables used for collation and averaging
+      accumulatedWindSpeed = 0;
+      sampleCounter = 0;
+      peakWindSpeed = 0;
+      samplePeriodTimer = millis();
+    }
     anemometerCounter = 0;
-    ta = millis();
+    anemometerTimer = millis();
   }
 
   //call the windDirection function
@@ -141,7 +168,7 @@ void loop() {
     digitalWrite(ledPin, LOW);
   }
 
-  // Push all the data console
+  // Push all the data to console
   if (millis() > (displayInterval + di)) {
     outputToConsole();
     di = millis();
