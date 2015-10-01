@@ -24,7 +24,9 @@ I like platformIO as it remove the hunting around for the correct libs to compil
 to use:
 
 git clone https://github.com/JonnyHonda/ArduinoWeatherStation.git
+
 cd ArduinoWeatherStation
+
 platformio run
 
 I'll improve this when the real sensors arrive.
