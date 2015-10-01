@@ -4,6 +4,7 @@
  * Author John Burrin
  *
  * Date 20 Sept 2015
+
  *
  * Requires:
  *          BMP085 Library from  https://github.com/adafruit/Adafruit-BMP085-Library
@@ -18,17 +19,26 @@
  *          N09QR Maplin Wind Speed
  *          A random solar cell, or with the correct pull up resistor a CDR
 **/
+void incrementAnemometer();
+void incrementRainTippper();
+void outputToConsole();
+void windDirection();
 
-#define DEBUG true
-// BMP085 include libs
+
+#include <Arduino.h>
+//#define DEBUG true
+//BMP085 include libs
 #include <Wire.h>
-#include <Adafruit_BMP085.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP085_U.h>
+//#include <Adafruit_BMP085.h>
 
 // Instansiate the bmp objet
-Adafruit_BMP085 bmp;
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 
 // DHT libs
-#include "DHT.h"
+#include <DHT.h>
+#include <DHT_U.h>
 const int  dhtPin = 5;
 const int dhtType = DHT22;
 
@@ -71,7 +81,7 @@ unsigned long ta = 0;
 
 // Some variables for the wind direction sensor
 const int windDirectionPin = 2; // Analog pin A2
-int windDirectionValue = 0;
+unsigned long int windDirectionValue = 0;
 char* windDirectionText;
 
 int windOrdinal = 0;
@@ -103,6 +113,7 @@ void setup() {
   // Setup the interrupt callback functions
   attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
   attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, CHANGE);
+  Serial.println("Setup Complete");
 }
 
 void loop() {
@@ -113,8 +124,13 @@ void loop() {
 #endif
 
   solarCellValue = analogRead(solarCellPin);
-  temperature = bmp.readTemperature();
-  pressure = bmp.readPressure();
+/* Get a new sensor event */ 
+  sensors_event_t event;
+  bmp.getEvent(&event);
+ if (event.pressure){
+  bmp.getTemperature(&temperature);
+  pressure = event.pressure;
+}
 
   // Note: regarding the anemometer.
   // according to documentation found here http://www.philpot.me/weatherinsider.html
@@ -172,7 +188,7 @@ void incrementAnemometer() {
       anemometerCounter++;
     }
     // Delay a little bit to avoid bouncing
-    delay(50);
+    //delay(50);
   }
   // save the current state as the last state,
   // for comparison next time
@@ -199,7 +215,7 @@ void incrementRainTippper() {
       rainTipperCounter++;
     }
     // Delay a little bit to avoid bouncing
-    delay(50);
+    //delay(50);
   }
   // save the current state as the last state,
   // for comparison next time
@@ -224,8 +240,11 @@ void windDirection() {
   // It would make more sense to just return an ordinal value, but then we have plenty of program space.
   // NOTE: THESE VALUES ARE MOCK JUST TO PROVE A POINT
   // BY LEAVING A WIRE IN A2 THE PIN WILL FLOAT ALL OVER THE PLACE GIVING A GOOD SIMULATION.
+  // 
+  
   windDirectionValue = analogRead(windDirectionPin);
-  if (windDirectionValue >= 0 && windDirectionValue < 64) {
+  // Be interesting to know if map(0,1023,0,15) would work here
+  if (windDirectionValue < 64) {
     strcpy(windDirectionText, "N");
     windOrdinal = 0;
   } else if (windDirectionValue >= 64 && windDirectionValue < 128) {
@@ -285,6 +304,7 @@ void windDirection() {
  *
  */
 void outputToConsole() {
+  cli();//disable interrupts
   Serial.println("**************************************");
   Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
   Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
@@ -297,6 +317,7 @@ void outputToConsole() {
   Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
   Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
   Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
+  sei();//enable interrupts
   Serial.println();
 }
 
