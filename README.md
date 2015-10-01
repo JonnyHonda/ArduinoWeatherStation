@@ -18,6 +18,14 @@ but if you just put a lead in it it will float and give a good simulation.
 
 Have fun.
 
+I've converted this project to platformIO - see ->
+I like platformIO as it remove the hunting around for the correct libs to compile the project
+to use:
+
+git clone https://github.com/JonnyHonda/ArduinoWeatherStation.git
+cd ArduinoWeatherStation
+platformio run
+
 I'll improve this when the real sensors arrive.
 
 JB
