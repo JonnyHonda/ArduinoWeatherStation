@@ -62,10 +62,10 @@ volatile int anemometerState = 0;
 volatile int lastAnemometerState = 0;
 
 // Various variables for use with the non interrupt sensors
-float temperature = 0;
-float pressure = 0;
-float dhtTemperature = 0;
-float humidity = 0;
+double temperature = 0;
+double pressure = 0;
+double dhtTemperature = 0;
+double humidity = 0;
 
 const int dhtReadInterval = 2000;
 unsigned long int t = 0;
@@ -75,14 +75,13 @@ const int solarCellPin = 1; // Analog pin A1
 int solarCellValue = 0;
 
 
-float windSpeed = 0;
+double windSpeed = 0;
 const int anemometerSampleInterval  = 1000;
 unsigned long ta = 0;
 
 // Some variables for the wind direction sensor
 const int windDirectionPin = 2; // Analog pin A2
 unsigned long int windDirectionValue = 0;
-char* windDirectionText;
 
 int windOrdinal = 0;
 
@@ -90,6 +89,11 @@ int windOrdinal = 0;
 const int displayInterval = 2000;
 unsigned long int di = 0;
 
+struct packet {
+  byte header[3];
+  byte data[10];
+  byte checksum[2];
+} my_packet;
 
 void setup() {
   // initialize the rain tipper pin as a input:
@@ -107,8 +111,11 @@ void setup() {
   dht.begin();
   bmp.begin();
 
-  // Default windDirectionText to some value, I chose North as windDirectionValue will be 0 (zero)
-  strcpy(windDirectionText, "N");
+
+// Set the header bytes.
+  my_packet.header[0] = 'A';
+  my_packet.header[1] = 'W';
+  my_packet.header[2] = 'S';
 
   // Setup the interrupt callback functions
   attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
@@ -116,33 +123,28 @@ void setup() {
   Serial.println("Setup Complete");
 }
 
+
 void loop() {
-#if defined(DEBUG)
-  int initial = 0;
-  int final = 0;
-  initial = micros();
-#endif
 
   solarCellValue = analogRead(solarCellPin);
-/* Get a new sensor event */ 
+  /* Get a new sensor event */
   sensors_event_t event;
   bmp.getEvent(&event);
- if (event.pressure){
-  bmp.getTemperature(&temperature);
-  pressure = event.pressure;
-}
+  if (event.pressure) {
+    bmp.getTemperature(&temperature);
+    pressure = event.pressure;
+  }
 
   // Note: regarding the anemometer.
   // according to documentation found here http://www.philpot.me/weatherinsider.html
   // one revolution per second is 2.4 kph
   if (millis() > (anemometerSampleInterval + ta)) {
-    windSpeed = (float)anemometerCounter / 2.4;
+    windSpeed = (double)anemometerCounter / 2.4;
     anemometerCounter = 0;
     ta = millis();
   }
 
-  //call the windDirection function
-  windDirection();
+  windDirectionValue = analogRead(windDirectionPin);
 
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
   // so we'll use a millis interval check
@@ -159,14 +161,52 @@ void loop() {
 
   // Push all the data console
   if (millis() > (displayInterval + di)) {
-    outputToConsole();
+    //outputToConsole();
+    int packet_temperature = (temperature + 120) * 10;
+    my_packet.data[1] = (byte) (packet_temperature & 0xFF);         // Low byte
+    my_packet.data[0] = (byte) ((packet_temperature >> 8) & 0xFF);  // High byte
+
+    int packet_pressure = (pressure + 800) * 10;
+    my_packet.data[3] = (byte) (packet_pressure & 0xFF);         // Low byte
+    my_packet.data[2] = (byte) ((packet_pressure >> 8) & 0xFF);  // High byte
+
+// Wind Ordinal
+    my_packet.data[4] = (byte) windDirectionValue;
+
+// Humidity
+    my_packet.data[5] = (byte) humidity;
+
+
+// Rain tipper counter
+    long rain_tipper = rainTipperCounter;
+    my_packet.data[6] = (rain_tipper >> 24) & 0xFF;
+    my_packet.data[7] = (rain_tipper >> 16) & 0xFF;
+    my_packet.data[8] = (rain_tipper >> 8) & 0xFF;
+    my_packet.data[9] = rain_tipper & 0xFF;
+
+/// Perform checksum
+    int checksum = 0;
+    for (int i = 0; i < 10; ++i) {
+      checksum += my_packet.data[i];
+    }
+
+    my_packet.checksum[1] = (byte) (checksum & 0xFF);         // Low byte
+    my_packet.checksum[0] = (byte) ((checksum >> 8) & 0xFF);  // High byte
+
+    for (int l = 0; l < 3; l++) {
+      Serial.write(my_packet.header[l]);
+    }
+    for (int l = 0; l < 10; l++) {
+      Serial.write(my_packet.data[l]);
+    }
+    for (int l = 0; l < 2; l++) {
+      Serial.write(my_packet.checksum[l]);
+    }
+    Serial.println();
+
     di = millis();
   }
 
-#if defined(DEBUG)
-  final = micros();
-  Serial.print("Loop execution time: "); Serial.print(final - initial); Serial.println(" micro seconds");
-#endif
 }
 
 /**
@@ -220,104 +260,5 @@ void incrementRainTippper() {
   // save the current state as the last state,
   // for comparison next time
   lastRainTipperState = rainTipperState;
-}
-
-
-/**
- * @name: windDirection
- * @params: none
- * @return: void
- * @description: Takes a value from the windDirectionPin and set the winDirectionText and windOrdinal
- * the text is simply N,E,S,W ,.... etc and the ordinal value is the segment the sensor is pointing in
- * 0 for North, 4 for East ... etc.
- * see http://www.philpot.me/weatherinsider.html to see what resitance values are expected
- *
- */
-void windDirection() {
-  // At this point I can't implement the wind direction sensor but it will go something like this
-  // depending of what the values come out based on the voltage used, the resistor values one 16(ish) values
-  // will be returned here.
-  // It would make more sense to just return an ordinal value, but then we have plenty of program space.
-  // NOTE: THESE VALUES ARE MOCK JUST TO PROVE A POINT
-  // BY LEAVING A WIRE IN A2 THE PIN WILL FLOAT ALL OVER THE PLACE GIVING A GOOD SIMULATION.
-  // 
-  
-  windDirectionValue = analogRead(windDirectionPin);
-  // Be interesting to know if map(0,1023,0,15) would work here
-  if (windDirectionValue < 64) {
-    strcpy(windDirectionText, "N");
-    windOrdinal = 0;
-  } else if (windDirectionValue >= 64 && windDirectionValue < 128) {
-    strcpy(windDirectionText, "NNE");
-    windOrdinal = 1;
-  } else if (windDirectionValue >= 128 && windDirectionValue < 192) {
-    strcpy(windDirectionText, "NE");
-    windOrdinal = 2;
-  } else if (windDirectionValue >= 192 && windDirectionValue < 256) {
-    strcpy(windDirectionText, "ENE");
-    windOrdinal = 3;
-  } else if (windDirectionValue >= 256 && windDirectionValue < 320) {
-    strcpy(windDirectionText, "E");
-    windOrdinal = 4;
-  } else if (windDirectionValue >= 320 && windDirectionValue < 384) {
-    strcpy(windDirectionText, "ESE");
-    windOrdinal = 5;
-  } else if (windDirectionValue >= 384 && windDirectionValue < 448) {
-    strcpy(windDirectionText, "SE");
-    windOrdinal = 6;
-  } else if (windDirectionValue >= 448 && windDirectionValue < 512) {
-    strcpy(windDirectionText, "SSE");
-    windOrdinal = 7;
-  } else if (windDirectionValue >= 512 && windDirectionValue < 576) {
-    strcpy(windDirectionText, "S");
-    windOrdinal = 8;
-  } else if (windDirectionValue >= 576 && windDirectionValue < 640) {
-    strcpy(windDirectionText, "SSW");
-    windOrdinal = 9;
-  } else if (windDirectionValue >= 640 && windDirectionValue < 704) {
-    strcpy(windDirectionText, "SW");
-    windOrdinal = 10;
-  } else if (windDirectionValue >= 704 && windDirectionValue < 768) {
-    strcpy(windDirectionText, "WSW");
-    windOrdinal = 11;
-  } else if (windDirectionValue >= 768 && windDirectionValue < 832) {
-    strcpy(windDirectionText, "W");
-    windOrdinal = 12;
-  } else if (windDirectionValue >= 832 && windDirectionValue < 896) {
-    strcpy(windDirectionText, "WNW");
-    windOrdinal = 13;
-  } else if (windDirectionValue >= 896 && windDirectionValue < 960) {
-    strcpy(windDirectionText, "NW");
-    windOrdinal = 14;
-  } else if (windDirectionValue >= 960) {
-    strcpy(windDirectionText, "NNW");
-    windOrdinal = 15;
-  }
-  // Mmmmm No default - now WHAT!!
-}
-
-/**
- * @name: outputToConsole
- * @params: none
- * @return: void
- * @description: Display all the stuff to serial console out
- *
- */
-void outputToConsole() {
-  cli();//disable interrupts
-  Serial.println("**************************************");
-  Serial.print ("Pressure = "); Serial.print(pressure / 100); Serial.println("mb");
-  Serial.print ("Humidity = "); Serial.print(humidity); Serial.println("%");
-  Serial.print ("Temperature = "); Serial.print(temperature); Serial.println("*C");
-  Serial.print ("DHT Temperature = "); Serial.print(dhtTemperature); Serial.println(" *C");
-  Serial.print ("Rain Tipper Counter = "); Serial.println(rainTipperCounter);
-  Serial.print ("Anemometer Counter = "); Serial.println(anemometerCounter);
-  Serial.print ("Wind Speed = "); Serial.print(windSpeed); Serial.println("kph");
-  Serial.print ("Wind Direction Value = "); Serial.println(windDirectionValue);
-  Serial.print ("Wind Direction Text = "); Serial.println(windDirectionText);
-  Serial.print ("Wind Direction Ordinal = "); Serial.println(windOrdinal);
-  Serial.print ("Solar Cell Value = "); Serial.println(solarCellValue);
-  sei();//enable interrupts
-  Serial.println();
 }
 
