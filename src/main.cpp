@@ -31,9 +31,8 @@ void windDirection();
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
-//#include <Adafruit_BMP085.h>
 
-// Instansiate the bmp objet
+// Instansiate the bmp object
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 
 // DHT libs
@@ -52,17 +51,9 @@ const int  rainTipperPin = 2; // Pin the rain tipper is connected to, this *must
 // Some variables declared as volatile for use in the rain tipper interupt
 volatile unsigned long int  rainTipperCounter = 0;
 volatile int rainTipperState = 0;
-volatile int lastRainTipperState = 0;
-
-const int  anemometerPin = 3; // Pin the anemometer is connected to, this *must* be an interrupt enabled pin
-
-// Some variables declared as volatile for use in the anemometer interupt
-volatile unsigned long int  anemometerCounter = 0;
-volatile int anemometerState = 0;
-volatile int lastAnemometerState = 0;
 
 // Various variables for use with the non interrupt sensors
-double temperature = 0;
+double temperature = 0.0;
 double pressure = 0;
 double dhtTemperature = 0;
 double humidity = 0;
@@ -91,7 +82,7 @@ unsigned long int di = 0;
 
 struct packet {
   byte header[3];
-  byte data[10];
+  byte data[12];
   byte checksum[2];
 } my_packet;
 
@@ -178,15 +169,24 @@ void loop() {
 
 
 // Rain tipper counter
-    long rain_tipper = rainTipperCounter;
-    my_packet.data[6] = (rain_tipper >> 24) & 0xFF;
-    my_packet.data[7] = (rain_tipper >> 16) & 0xFF;
-    my_packet.data[8] = (rain_tipper >> 8) & 0xFF;
+//    Serial.println(rainTipperCounter);
+    unsigned long int rain_tipper = rainTipperCounter;
     my_packet.data[9] = rain_tipper & 0xFF;
+    my_packet.data[8] = (rain_tipper >> 8) & 0xFF;
+    my_packet.data[7] = (rain_tipper >> 16) & 0xFF;
+    my_packet.data[6] = (rain_tipper >> 24) & 0xFF;
+//
+//Serial.print (windSpeed);
+// Wind speed - Range 0 to 45 m/s
+int packet_windspeed = (windSpeed + 45) * 100;
+//Serial.println(packet_windspeed);
+    my_packet.data[11] = (byte) (packet_windspeed & 0xFF);         // Low byte
+    my_packet.data[10] = (byte) ((packet_windspeed >> 8) & 0xFF);  // High byte
+
 
 /// Perform checksum
     int checksum = 0;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 12; ++i) {
       checksum += my_packet.data[i];
     }
 
@@ -196,7 +196,7 @@ void loop() {
     for (int l = 0; l < 3; l++) {
       Serial.write(my_packet.header[l]);
     }
-    for (int l = 0; l < 10; l++) {
+    for (int l = 0; l < 12; l++) {
       Serial.write(my_packet.data[l]);
     }
     for (int l = 0; l < 2; l++) {
