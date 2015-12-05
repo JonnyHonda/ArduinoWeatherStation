@@ -51,9 +51,16 @@ const int  rainTipperPin = 2; // Pin the rain tipper is connected to, this *must
 // Some variables declared as volatile for use in the rain tipper interupt
 volatile unsigned long int  rainTipperCounter = 0;
 volatile int rainTipperState = 0;
+volatile int lastRainTipperState = 0;
 
+const int  anemometerPin = 3; // Pin the anemometer is connected to, this *must* be an interrupt enabled pin
+
+// Some variables declared as volatile for use in the anemometer interupt
+volatile unsigned long int  anemometerCounter = 0;
+volatile int anemometerState = 0;
+volatile int lastAnemometerState = 0;
 // Various variables for use with the non interrupt sensors
-double temperature = 0.0;
+float temperature = 0.0;
 double pressure = 0;
 double dhtTemperature = 0;
 double humidity = 0;
