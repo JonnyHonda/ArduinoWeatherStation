@@ -68,9 +68,9 @@ double humidity = 0;
 const int dhtReadInterval = 2000;
 unsigned long int t = 0;
 
-// Solar cell variables
-const int solarCellPin = 1; // Analog pin A1
-int solarCellValue = 0;
+// Light Sensor variables
+const int AnalogLightValuePin = 1; // Analog pin A1
+int AnalogLightValue = 0;
 
 
 double windSpeed = 0;
@@ -87,9 +87,10 @@ int windOrdinal = 0;
 const int displayInterval = 2000;
 unsigned long int di = 0;
 
+const int data_size = 14;
 struct packet {
   byte header[3];
-  byte data[12];
+  byte data[data_size];
   byte checksum[2];
 } my_packet;
 
@@ -124,7 +125,7 @@ void setup() {
 
 void loop() {
 
-  solarCellValue = analogRead(solarCellPin);
+  AnalogLightValue = analogRead(AnalogLightValuePin);
   /* Get a new sensor event */
   sensors_event_t event;
   bmp.getEvent(&event);
@@ -159,7 +160,6 @@ void loop() {
 
   // Push all the data console
   if (millis() > (displayInterval + di)) {
-    //outputToConsole();
     int packet_temperature = (temperature + 120) * 10;
     my_packet.data[1] = (byte) (packet_temperature & 0xFF);         // Low byte
     my_packet.data[0] = (byte) ((packet_temperature >> 8) & 0xFF);  // High byte
@@ -186,29 +186,45 @@ void loop() {
 //Serial.print (windSpeed);
 // Wind speed - Range 0 to 45 m/s
 int packet_windspeed = (windSpeed + 45) * 100;
-//Serial.println(packet_windspeed);
     my_packet.data[11] = (byte) (packet_windspeed & 0xFF);         // Low byte
     my_packet.data[10] = (byte) ((packet_windspeed >> 8) & 0xFF);  // High byte
+
+//Serial.println (AnalogLightValue);
+int packet_lightValue = AnalogLightValue;
+    my_packet.data[13] = (byte) (packet_lightValue & 0xFF);         // Low byte
+    my_packet.data[12] = (byte) ((packet_lightValue >> 8) & 0xFF);  // High byte
 
 
 /// Perform checksum
     int checksum = 0;
-    for (int i = 0; i < 12; ++i) {
+    for (int i = 0; i < data_size; ++i) {
       checksum += my_packet.data[i];
     }
 
     my_packet.checksum[1] = (byte) (checksum & 0xFF);         // Low byte
     my_packet.checksum[0] = (byte) ((checksum >> 8) & 0xFF);  // High byte
 
+#ifdef DEBUG
+    Serial.println(temperature);
+    Serial.println(pressure);
+    Serial.println(windDirectionValue);
+    Serial.println(humidity);
+Serial.println(rainTipperCounter);
+Serial.println (windSpeed);
+Serial.println (AnalogLightValue);
+#endif
+
     for (int l = 0; l < 3; l++) {
       Serial.write(my_packet.header[l]);
     }
-    for (int l = 0; l < 12; l++) {
+    for (int l = 0; l < data_size; l++) {
       Serial.write(my_packet.data[l]);
     }
     for (int l = 0; l < 2; l++) {
       Serial.write(my_packet.checksum[l]);
     }
+
+
     Serial.println();
 
     di = millis();
