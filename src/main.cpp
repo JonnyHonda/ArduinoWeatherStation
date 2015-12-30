@@ -117,8 +117,8 @@ void setup() {
   my_packet.header[2] = 'S';
 
   // Setup the interrupt callback functions
-  attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, LOW);
+  attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, LOW);
   Serial.println("Setup Complete");
 }
 
