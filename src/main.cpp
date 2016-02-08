@@ -79,9 +79,9 @@ unsigned long ta = 0;
 
 // Some variables for the wind direction sensor
 const int windDirectionPin = 2; // Analog pin A2
-unsigned long int windDirectionValue = 0;
+byte windDirectionValue = 0;
 
-int windOrdinal = 0;
+byte windOrdinal = 0;
 
 // Variables used in controling when console display messages are outputted
 const int displayInterval = 2000;
@@ -117,8 +117,8 @@ void setup() {
   my_packet.header[2] = 'S';
 
   // Setup the interrupt callback functions
-  attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, LOW);
-  attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, LOW);
+  attachInterrupt(digitalPinToInterrupt(rainTipperPin), incrementRainTippper, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(anemometerPin), incrementAnemometer, CHANGE);
   Serial.println("Setup Complete");
 }
 
@@ -144,6 +144,74 @@ void loop() {
   }
 
   windDirectionValue = analogRead(windDirectionPin);
+  if (windDirectionValue >= 15 && windDirectionValue <= 17){
+    //N
+    windOrdinal = 0;
+  }
+  else if (windDirectionValue >= 148 && windDirectionValue <= 150){ 
+    //NNE
+    windOrdinal = 1;
+  }
+  else if (windDirectionValue >= 204 && windDirectionValue <= 206){ 
+    //NE
+    windOrdinal = 2;
+  }
+  else if (windDirectionValue >= 79 && windDirectionValue <= 81){ 
+    //ENE
+    windOrdinal = 3;
+  }
+  else if (windDirectionValue >= 89 && windDirectionValue <= 91){ 
+    //E
+    windOrdinal = 4;
+  }
+  else if (windDirectionValue >= 60 && windDirectionValue <= 65){
+    //ESE
+    windOrdinal = 5;
+  }
+  else if (windDirectionValue >= 180 && windDirectionValue <= 185){
+    //SE
+    windOrdinal = 6;
+  }
+  else if (windDirectionValue >= 121 && windDirectionValue <= 124){
+    //SSE
+    windOrdinal = 7;
+  }
+    else if (windDirectionValue >= 29 && windDirectionValue <= 31){
+    //S
+    windOrdinal = 8;
+  }
+  
+  else if (windDirectionValue >= 240 && windDirectionValue <= 243){
+    //SSW
+    windOrdinal = 9;
+  }
+  else if (windDirectionValue >= 115 && windDirectionValue <= 119){
+    //SW
+    windOrdinal = 10;
+  }
+  else if (windDirectionValue >= 85 && windDirectionValue <= 88){
+     //WSW
+     windOrdinal = 11;
+   }
+   else if (windDirectionValue >= 176 && windDirectionValue <= 178){
+     //W
+     windOrdinal = 12;
+   
+   }else if (windDirectionValue >= 58 && windDirectionValue <= 62){
+     //WNW
+     windOrdinal = 13;
+   }
+   else if (windDirectionValue >= 118 && windDirectionValue <= 122){
+     //NW
+     windOrdinal = 14;
+   }
+   else if (windDirectionValue >= 190 && windDirectionValue <= 195){
+     //NNW
+     windOrdinal = 15;
+   }
+  
+
+
 
   // The dht22 is slow but I want to avoid putting a delay in that freezes the code
   // so we'll use a millis interval check
@@ -169,7 +237,8 @@ void loop() {
     my_packet.data[2] = (byte) ((packet_pressure >> 8) & 0xFF);  // High byte
 
 // Wind Ordinal
-    my_packet.data[4] = (byte) windDirectionValue;
+   my_packet.data[4] = (byte) windOrdinal;
+   // my_packet.data[4] = (byte) windDirectionValue;
 
 // Humidity
     my_packet.data[5] = (byte) humidity;
